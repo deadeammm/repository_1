@@ -1,0 +1,39 @@
+"""
+Написать программу: Нечетные четырехзначные числа, не превышающие 4096 в 10-ти тичной системе счисления, в которой третья правая цифра равна 2.
+Выводит цифры на экране чисел, выполняя двойные измерения. Вычисляется среднее число между звуком и максимальным и выводится прописью.
+"""
+
+
+# Функция для конвертации числа в пропись
+def number_to_words(num):
+    units = ["", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять"]
+
+    if num < 10:
+        return units[num]
+
+    return " ".join([units[int(digit)] for digit in str(num)])
+
+
+# Чтение чисел из файла и фильтрация
+numbers = []
+with open("numbers.txt", "r") as file:
+    for line in file:
+        num = int(line.strip())
+        if num % 2 != 0 and len(str(num)) == 4 and str(num)[-3] == '2':
+            numbers.append(num)
+
+# Вывод отфильтрованных чисел для проверки
+if numbers:
+    print("Отфильтрованные числа:")
+    for num in numbers:
+        print(num)
+else:
+    print("Нет подходящих чисел.")
+
+# Нахождение среднего числа и его вывод прописью
+if numbers:
+    avg_num = sum(numbers) // len(numbers)
+    avg_words = number_to_words(avg_num)
+    print(f"Среднее число между минимальным и максимальным ({min(numbers)} и {max(numbers)}) прописью: {avg_words}")
+else:
+    print("Нет подходящих чисел для нахождения среднего.")
