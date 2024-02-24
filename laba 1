@@ -41,7 +41,7 @@ if numbers:
     min_value = min(numbers)
     max_value = max(numbers)
     for val in numbers:
-        num_remove_two=[int("".join(filter(lambda x: x != '2', str(num)))) for num in numbers]
+        num_remove_two = [int("".join(filter(lambda x: x != '2', str(num)))) for num in numbers]
     print("Список исключающие 2", num_remove_two)
     avg_num = min_value+max_value // 2
     avg_words = number_to_words(avg_num)
