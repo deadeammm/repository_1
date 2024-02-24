@@ -16,7 +16,7 @@ def number_to_words(num):
         return "Неверный ввод. Пожалуйста, укажите действительный номер."
 
 
-file = open("input.txt", "r", encoding="utf-8")
+file = open("text.txt", "r", encoding="utf-8")
 numbers = []
 
 while True:
@@ -31,15 +31,15 @@ while True:
             if num.startswith("-"):
                 is_minus = True
                 num = num[1:]
-            if all(value not in punct and not value.isalpha() and "0"<= value <= "3" for value in num):
-                if int(num) %2==1 and len(num)<7 and num[-3]=="2":
+            if all(value not in punct and not value.isalpha() and "0" <= value <= "3" for value in num):
+                if int(num) % 2 == 1 and len(num) < 7 and num[-3] == "2":
                     if is_minus:
                         num = -int(num)
                     numbers.append(int(num))
 if numbers:
     print("Список чисел", numbers)
-    min_value=min(numbers)
-    max_value=max(numbers)
+    min_value = min(numbers)
+    max_value = max(numbers)
     for val in numbers:
         num_remove_two=[int("".join(filter(lambda x: x != '2', str(num)))) for num in numbers]
     print("Список исключающие 2", num_remove_two)
@@ -48,5 +48,3 @@ if numbers:
     print(f"Среднее число между минимальным и максимальным ({min_value} и {max_value}) прописью: {avg_words}")
 else:
     print("Нет подходящих чисел для нахождения среднего.")
-
-
