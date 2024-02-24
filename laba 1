@@ -1,39 +1,50 @@
 """
-Написать программу: Нечетные четырехзначные числа, не превышающие 4096 в 10-ти тичной системе счисления, в которой третья правая цифра равна 2.
-Выводит цифры на экране чисел, выполняя двойные измерения. Вычисляется среднее число между звуком и максимальным и выводится прописью.
+Нечетные четырехричные числа, не превышающие 409610, у которых третья справа цифра равна 2. Выводит на экран цифры числа, исключая двойки.
+Вычисляется среднее число между минимальным и максимальным и выводится прописью.
 """
 
 
-# Функция для конвертации числа в пропись
 def number_to_words(num):
-    units = ["", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять"]
+    units = ["", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "минус"]
+    try:
+        num = int(num)
+        if num < 0:
+            return " ".join([units[10]] + [units[int(digit)] for digit in str(abs(num))])
+        else:
+            return " ".join([units[int(digit)] for digit in str(num)])
+    except (ValueError, IndexError):
+        return "Неверный ввод. Пожалуйста, укажите действительный номер."
 
-    if num < 10:
-        return units[num]
 
-    return " ".join([units[int(digit)] for digit in str(num)])
-
-
-# Чтение чисел из файла и фильтрация
+file = open("input.txt", "r", encoding="utf-8")
 numbers = []
-with open("numbers.txt", "r") as file:
-    for line in file:
-        num = int(line.strip())
-        if num % 2 != 0 and len(str(num)) == 4 and str(num)[-3] == '2':
-            numbers.append(num)
 
-# Вывод отфильтрованных чисел для проверки
+while True:
+    str_txt = file.readline().split()
+    if not str_txt:
+        print("\nФайл input.txt в директории проекта закончился")
+        break
+    else:
+        for num in str_txt:
+            is_minus = False
+            punct = '''!()[]{};:'"\,<>./?@#$%^&*_~'''
+            if num.startswith("-"):
+                is_minus = True
+                num = num[1:]
+            if all(value not in punct and not value.isalpha() and "0" <= value <= "3" for value in num ) and len(num) > 2:
+                if int(num) % 2 == 1 and len(num) < 7 and num[-3] == "2" and len(num) > 2:
+                    if is_minus:
+                        num = -int(num)
+                    numbers.append(int(num))
 if numbers:
-    print("Отфильтрованные числа:")
-    for num in numbers:
-        print(num)
-else:
-    print("Нет подходящих чисел.")
-
-# Нахождение среднего числа и его вывод прописью
-if numbers:
-    avg_num = sum(numbers) // len(numbers)
+    print("Список чисел", numbers)
+    min_value = min(numbers)
+    max_value = max(numbers)
+    for val in numbers:
+        num_remove_two=[int("".join(filter(lambda x: x != '2', str(num)))) for num in numbers]
+    print("Список исключающие 2", num_remove_two)
+    avg_num = min_value+max_value // 2
     avg_words = number_to_words(avg_num)
-    print(f"Среднее число между минимальным и максимальным ({min(numbers)} и {max(numbers)}) прописью: {avg_words}")
+    print(f"Среднее число между минимальным и максимальным ({min_value} и {max_value}) прописью: {avg_words}")
 else:
     print("Нет подходящих чисел для нахождения среднего.")
