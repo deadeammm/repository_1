@@ -1,0 +1,47 @@
+"""
+Написать программу, решающую задачу из 1 лабораторной работы (в соответствии со своим вариантом) со следующими изменениями:
+1.	Входной файл является обыкновенным (т.е. нет требования на «бесконечность» файла);
+2.	Распознавание и обработку делать  через регулярные выражения;
+3.	В вариантах, где есть параметр (например К), допускается его заменить на любое число;
+4.	Все остальные требования соответствуют варианту задания лабораторной работы №1.
+
+Задание из лабораторной работы №1.
+Нечетные четырехричные числа, не превышающие 409610, у которых третья справа цифра равна 2. Выводит на экран цифры числа, исключая двойки.
+Вычисляется среднее число между минимальным и максимальным и выводится прописью.
+"""
+import re
+
+
+def number_to_words(num):
+    units = ["", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "минус"]
+    try:
+        num = int(num)
+        if num < 0:
+            return " ".join([units[10]] + [units[int(digit)] for digit in str(abs(num))])
+        else:
+            return " ".join([units[int(digit)] for digit in str(num)])
+    except (ValueError, IndexError):
+        return "Неверный ввод. Пожалуйста, укажите действительный номер."
+
+
+numbers = []
+with open("input.txt", "r", encoding="utf-8") as file:
+    for line in file:
+        nums = [int(num) for num in line.split() if num.isdigit()]
+        for num in nums:
+            if num % 2 == 1 and re.match(r'^-?[0-3]*2[0-3]{2}$', str(num)) and len(str(num)) < 7 :
+                numbers.append(num)
+
+if not numbers:
+    print("Нет подходящих чисел для нахождения среднего.")
+else:
+    print("Список чисел:", numbers)
+    min_value = min(numbers)
+    max_value = max(numbers)
+    for num in numbers:
+        num_remove_two = re.sub(r'2', '', str(num))
+        print("Список чисел, исключая 2:", num_remove_two)
+
+    avg_num = (min_value + max_value) // 2
+    avg_words = number_to_words(avg_num)
+    print(f"Среднее число между минимальным и максимальным ({min_value} и {max_value}) прописью: {avg_words}")
