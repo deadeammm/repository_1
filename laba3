@@ -1,0 +1,129 @@
+"""
+Задание:
+С клавиатуры вводится два числа K и N. Квадратная матрица А(N,N), состоящая из 4-х равных по размерам подматриц B,C,D,E
+заполняется случайным образом целыми числами в интервале [-10,10]. Для тестирования использовать не случайное заполнение,
+а целенаправленное.
+
+Вариант 12
+Формируется матрица F следующим образом:если в В количество простых чисел в нечетных столбцах в области 2 больше,
+чем сумма чисел в четных строках в области 1, то поменять в Е симметрично области 1 и 2 местами, иначе С и Е поменять
+местами несимметрично. При этом матрица А не меняется. После чего вычисляется выражение: ((К*A)*А– K*A^T).
+Выводятся по мере формирования А, F и все матричные операции последовательно.
+"""
+
+import random
+
+
+def generate_matrix(n):
+    matrix = []
+    for _ in range(n):
+        row = [random.randint(-10, 10) for _ in range(n)]
+        matrix.append(row)
+    return matrix
+
+
+def is_prime(num):
+    if num < 2:
+        return False
+    for i in range(2, int(num**0.5) + 1):
+        if num % i == 0:
+            return False
+    return True
+
+
+def count_primes_in_odd_columns(B):
+    count = 0
+    for j in range(len(B[0])):
+        col = [B[i][j] for i in range(len(B))]
+        count += sum([1 for elem in col if is_prime(elem) and j % 2 != 0])
+    return count
+
+
+def sum_even_rows_in_area1(C):
+    return sum([sum(row) for i, row in enumerate(C) if i % 2 == 0])
+
+
+def swap_matrices_symmetrically(matrix1, matrix2):
+    n = len(matrix1)
+    for i in range(n//2):
+        matrix1[i], matrix1[n-i-1] = matrix1[n-i-1], matrix1[i]
+        matrix2[i], matrix2[n-i-1] = matrix2[n-i-1], matrix2[i]
+
+
+def swap_matrices_asymmetrically(matrix1, matrix2):
+    for i in range(len(matrix1)):
+        for j in range(len(matrix1)):
+            matrix1[i][j], matrix2[j][i] = matrix2[j][i], matrix1[i][j]
+
+
+def matrix_operations(A, K):
+    KA = [[K * elem for elem in row] for row in A]
+    AT = [[row[i] for row in A] for i in range(len(A))]
+    KAA = [[sum([x * y for x, y in zip(row_A, row_AT)]) for row_AT in AT] for row_A in KA]
+    result = [[KA[i][j] - KAA[i][j] for j in range(len(A))] for i in range(len(A))]
+    return result
+
+
+def main():
+    def is_valid_input(input_str):
+        try:
+            num = int(input_str)
+            if num == 0:
+                print("Ошибка: Число не может быть равно 0")
+                return False
+        except ValueError:
+            print("Ошибка: Введите целое число")
+            return False
+        return True
+
+    K_input = input("Введите число K: ")
+    if not is_valid_input(K_input):
+        return
+    K = int(K_input)
+
+    N_input = input("Введите размер матрицы N: ")
+    if not is_valid_input(N_input):
+        return
+    N = int(N_input)
+
+    A = generate_matrix(N)
+    B = [row[1::2] for row in A]
+
+    # Проверяем, что B не пустой
+    if not B:
+        print("Ошибка: Подматрица B пустая. Возможно, проблема в генерации матрицы.")
+        return
+
+    C = A[:N//2]
+    D = A[N//2:]
+    E = [row[:N//2] + row[N//2:] for row in A]
+
+    primes_count = count_primes_in_odd_columns(B)
+    even_sum = sum_even_rows_in_area1(C)
+
+    F = [row.copy() for row in E]
+
+    if primes_count > even_sum:
+        swap_matrices_symmetrically(E[:N//2], E[N//2:])
+        print("Области 1 и 2 в E поменялись местами симметрично:")
+    else:
+        swap_matrices_asymmetrically(C, E)
+        print("Области 1 и 2 в C и E поменялись местами несимметрично:")
+
+    print("\nМатрица A:")
+    for row in A:
+        print(row)
+
+    print("\nМатрица F:")
+    for row in F:
+        print(row)
+
+    result = matrix_operations(A, K)
+
+    print("\nРезультат выражения ((K*A)*A) - K*A^T):")
+    for row in result:
+        print(row)
+
+
+if __name__ == "__main__":
+    main()
