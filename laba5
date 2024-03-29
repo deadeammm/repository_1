@@ -1,0 +1,83 @@
+"""
+Задана рекуррентная функция. Область определения функции – натуральные числа. Написать программу сравнительного
+вычисления данной функции рекурсивно и итерационно (значение, время). Определить (смоделировать) границы применимости
+рекурсивного и итерационного подхода. Результаты сравнительного исследования времени вычисления представить в табличной
+и графической форме в виде отчета по лабораторной работе.
+F(n<5)=10; F(n)=(-1)n*(5F(n-1)-7(n-2)+F(n//5)/(2n)!) (при n >12), F(n)=F(n-2)-F(n-1) (при 5<n<=12)
+"""
+
+import time
+import math
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+def recursive_F(n):  # определяем рекурсивную функцию
+    print(f"Вычисление рекурсивная_F({n})")
+    if n < 5:
+        return 10
+    elif n > 12:
+        return (-1) ** n * (5 * recursive_F(n - 1) - 7 * (n - 2) + recursive_F(n // 5)) / math.factorial(2 * n)
+    else:
+        return recursive_F(n - 2) - recursive_F(n - 1)
+
+
+def iterative_F(n):  # определяем итеративную функцию
+    print(f"Вычисление итеративная_F({n})")
+    if n < 5:
+        return 10
+
+    f_values = [10] * 5  # инициализируем список значений f
+
+    for i in range(5, n + 1):
+        if i > 12:
+            f = (-1) ** i * (5 * f_values[-1] - 7 * (i - 2) + f_values[i // 5]) / math.factorial(2 * i)
+        else:
+            f = f_values[-2] - f_values[-1]
+
+        f_values.append(f)
+
+    return f_values[-1]
+
+
+# Теперь проведем анализ для нескольких значений n
+for n in range(5, 15):
+    print(f"n = {n}")
+    result_recursive = recursive_F(n)
+    result_iterative = iterative_F(n)
+    print(f"Рекурсивное время: {result_recursive}")
+    print(f"Итеративное время: {result_iterative}")
+    print()
+
+# Определяем границы применимости рекурсивного и итерационного подхода
+# Продолжаем сравнительное исследование времени выполнения
+n_values = list(range(5, 25))
+recursive_times = []
+iterative_times = []
+
+for n in n_values:
+    start_time_recursive = time.time()
+    recursive_F(n)
+    recursive_times.append(time.time() - start_time_recursive)
+
+    start_time_iterative = time.time()
+    iterative_F(n)
+    iterative_times.append(time.time() - start_time_iterative)
+
+# Создаем DataFrame для отчета
+data = {"n": n_values, "Рекурсивное время (сек)": recursive_times, "Итеративное время (сек)": iterative_times}
+df = pd.DataFrame(data)
+
+# Выводим таблицу с результатами
+print(df)
+
+# Графическое представление результатов
+plt.figure(figsize=(12, 6))
+plt.plot(n_values, recursive_times, label='Рекурсивное время (сек)', marker='o')
+plt.plot(n_values, iterative_times, label='Итеративное время (сек)', marker='x')
+plt.xlabel('n')
+plt.ylabel('Время (сек)')
+plt.title('Сравнение времени выполнения рекурсивной и итеративной функций')
+plt.legend()
+plt.grid(True)
+plt.show()
