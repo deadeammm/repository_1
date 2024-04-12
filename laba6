@@ -1,0 +1,106 @@
+"""
+Есть требования:
+1 часть – написать программу в соответствии со своим вариантом задания.
+Написать 2 варианта формирования (алгоритмический и с помощью функций Питона), сравнив по времени их выполнение.
+2 часть – усложнить написанную программу введя по своему усмотрению в условие минимум одно ограничение на характеристики
+объектов (которое будет сокращать количество переборов) и целевую функцию для нахождения оптимального решения.
+
+Вариант 12. Задание: Книжный магазин подает рождественские открытки К видов. Покупателю нужно N открыток. Сформировать
+все возможные комплекты покупки.
+"""
+
+from itertools import combinations
+import timeit
+
+
+# 1 часть-Алгоритмический вариант
+def generate_gift_sets_algorithmic(N, K):
+    all_gifts = list(range(1, K+1))
+    gift_sets = []  # Список для хранения всех комбинаций открыток
+
+    # Генерация всех возможных комбинаций открыток
+    for r in range(1, K+1):
+        comb = combinations(all_gifts, r)
+        for c in comb:
+            if len(c) == N:
+                gift_sets.append(c)
+
+    return gift_sets
+
+
+# 1 часть - Вариант с использованием функций Python
+def generate_gift_sets_pythonic(N, K):
+    all_gifts = list(range(1, K+1))
+    # Использование list comprehension для генерации комбинаций
+    gift_sets = [c for r in range(1, K+1) for c in combinations(all_gifts, r) if len(c) == N]
+
+    return gift_sets
+
+
+N = 3  # количество открыток, которые нужно купить
+K = 5  # общее количество видов открыток
+
+# Измерение времени выполнения алгоритмического варианта
+start_time = timeit.timeit()
+generate_gift_sets_algorithmic(N, K)
+algorithmic_time = timeit.timeit() - start_time
+
+# Измерение времени выполнения варианта с использованием функций Python
+start_time = timeit.timeit()
+generate_gift_sets_pythonic(N, K)
+pythonic_time = timeit.timeit() - start_time
+
+print("1 часть - Результат работы алгоритмической функции:", generate_gift_sets_algorithmic(N, K))
+print("Результат работы более Python-ой функции:", generate_gift_sets_pythonic(N, K))
+
+
+print("\nВремя выполнения алгоритмического варианта:", algorithmic_time)
+print("Время выполнения варианта с использованием функций Python:", pythonic_time)
+
+
+# 2 часть - Усложненная программа
+def generate_gift_sets_optimized(N, K):
+    all_gifts = ["Рождество", "Новый год", "Зима", "Санта", "Снежинка"]
+    similar_theme = {"Рождество": ["Новый год"], "Санта": ["Зима"]}
+    gift_sets = []
+
+    for r in range(1, K+1):
+        comb = combinations(all_gifts, r)
+        for c in comb:
+            if len(set(c)) == N:
+                add_set = True
+                # Проверка ограничений на характеристики объектов
+                for theme, similar_themes in similar_theme.items():
+                    if theme in c:
+                        for sim_theme in similar_themes:
+                            if sim_theme in c:
+                                add_set = False
+                                break
+                        if not add_set:
+                            break
+                if add_set:
+                    gift_sets.append(c)
+
+    return gift_sets
+
+
+# Функция для вычисления целевой функции (в данном случае, количество возможных комплектов покупки)
+def target_function(gift_sets):
+    return len(gift_sets)
+
+
+N = 3  # Количество открыток, которые нужно купить
+K = 5  # Общее количество видов открыток
+
+# Генерация всех возможных комбинаций покупки
+all_gift_sets = generate_gift_sets_optimized(N, K)
+
+# Вычисление целевой функции
+optimal_solution = target_function(all_gift_sets)
+
+# Вывод результатов
+print("\n2 часть - Все возможные комбинации покупки:")
+for gift_set in all_gift_sets:
+    print(gift_set)
+
+print("\nОптимальное решение (количество возможных комбинатов):", optimal_solution)
