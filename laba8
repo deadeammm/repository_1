@@ -1,0 +1,300 @@
+"""
+- Требуется написать объектно-ориентированную программу с графическим интерфейсом в соответствии со своим вариантом.
+- В программе должны быть реализованы минимум один класс, три атрибута, четыре метода (функции).
+- Ввод данных из файла с контролем правильности ввода.
+- Базы данных использовать нельзя.
+- При необходимости сохранять информацию в виде файлов, разделяя значения запятыми или пробелами.
+Для GUI использовать библиотеку tkinter.
+
+Вариант 12.
+Объекты – факультативы
+Функции: сегментация полного списка факультативов по студентам
+визуализация предыдущей функции в форме круговой диаграммы
+сегментация полного списка факультативов по преподавателям
+визуализация предыдущей функции в форме круговой диаграммы
+"""
+
+import tkinter as tk
+from tkinter import ttk
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkinter import messagebox
+import re
+
+
+class Facultative:
+    def __init__(self, name, student, teacher):
+        self.name = name
+        self.student = student
+        self.teacher = teacher
+
+    def __str__(self):
+        return f"{self.name} - Student: {self.student}, Teacher: {self.teacher}"
+
+
+class FacultativeManager:
+    def __init__(self):
+        self.facultatives = []
+        self.load_data()
+        self.create_gui()
+
+    def load_data(self):
+        try:
+            with open("facultatives.txt", "r", encoding='cp1251') as file:
+                for line in file:
+                    name, student, teacher = line.strip().split(",")
+                    self.facultatives.append(Facultative(name, student, teacher))
+        except FileNotFoundError:
+            print("Файл facultatives.txt не найден. Создайте файл с данными.")
+
+    def save_data(self):
+        with open("facultatives.txt", "w") as file:
+            for facultative in self.facultatives:
+                file.write(f"{facultative.name},{facultative.student},{facultative.teacher}\n")
+
+    def segment_by_student(self):
+        student_counts = {}
+        for facultative in self.facultatives:
+            if facultative.student not in student_counts:
+                student_counts[facultative.student] = 0
+            student_counts[facultative.student] += 1
+        return student_counts
+
+    def segment_by_teacher(self):
+        teacher_counts = {}
+        for facultative in self.facultatives:
+            if facultative.teacher not in teacher_counts:
+                teacher_counts[facultative.teacher] = 0
+            teacher_counts[facultative.teacher] += 1
+        return teacher_counts
+
+    def create_gui(self):
+        self.root = tk.Tk()
+        self.root.title("Факультативы")
+
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+
+        window_width = 1500
+        window_height = 800
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+        # Рамка для кнопок и отображения данных
+        self.main_frame = tk.Frame(self.root)
+        self.main_frame.pack(pady=10)
+
+        # Кнопки
+        self.segment_by_student_button = ttk.Button(
+            self.main_frame, text="Сегментация по студентам", command=self.show_student_data
+        )
+        self.segment_by_student_button.pack(side=tk.LEFT, padx=10)
+
+        self.segment_by_teacher_button = ttk.Button(
+            self.main_frame, text="Сегментация по преподавателям", command=self.show_teacher_data
+        )
+        self.segment_by_teacher_button.pack(side=tk.LEFT, padx=10)
+
+        self.add_facultative_button = ttk.Button(
+            self.main_frame, text="Добавить факультатив", command=self.add_facultative
+        )
+        self.add_facultative_button.pack(side=tk.LEFT, padx=10)
+
+        # Рамка для диаграммы
+        self.chart_frame = tk.Frame(self.root)
+        self.chart_frame.pack(pady=10)
+
+        # Отображение данных
+        self.facultative_listbox = tk.Listbox(self.main_frame, width=65, height=10)
+        self.facultative_listbox.pack(side=tk.LEFT, padx=10)
+        self.update_facultative_listbox()
+
+        self.update_button = ttk.Button(
+            self.main_frame, text="Обновить список", command=self.update_facultative_listbox
+        )
+        self.update_button.pack(side=tk.LEFT, padx=10)
+
+        self.delete_button = ttk.Button(
+            self.main_frame, text="Удалить факультатив", command=self.delete_facultative
+        )
+        self.delete_button.pack(side=tk.LEFT, padx=10)
+
+        self.edit_button = ttk.Button(
+            self.main_frame, text="Редактировать факультатив", command=self.edit_facultative
+        )
+        self.edit_button.pack(side=tk.LEFT, padx=10)
+
+        self.root.mainloop()
+
+    def update_facultative_listbox(self):
+        self.facultative_listbox.delete(0, tk.END)
+        for facultative in self.facultatives:
+            self.facultative_listbox.insert(tk.END, facultative)
+
+    def visualize_data(self, data, title):
+        labels = list(data.keys())
+        sizes = list(data.values())
+
+        fig, ax = plt.subplots(figsize=(15, 15))
+        ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90,
+               colors=['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffbb78', '#98df8a', '#c5b0d5',
+                       '#ff69b4',
+                       '#fffacd'])
+        ax.axis('equal')
+        ax.set_title(title, fontsize=16, fontweight='bold', pad=20)
+        plt.legend(title="Студенты / Преподаватели", bbox_to_anchor=(1.05, 1), loc='upper right')
+
+        canvas = FigureCanvasTkAgg(fig, master=self.chart_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        for widget in self.chart_frame.winfo_children():
+            if widget != canvas.get_tk_widget():
+                widget.destroy()
+
+    def show_student_data(self):
+        student_counts = self.segment_by_student()
+        self.visualize_data(student_counts, "Распределение по студентам")
+
+    def show_teacher_data(self):
+        teacher_counts = self.segment_by_teacher()
+        self.visualize_data(teacher_counts, "Распределение по преподавателям")
+
+    def add_facultative(self):
+        def save_facultative():
+            name = name_entry.get()
+            student = student_entry.get()
+            teacher = teacher_entry.get()
+
+            # Проверка на пустые поля
+            if not name or not student or not teacher:
+                messagebox.showerror("Ошибка", "Заполните все поля.")
+                return
+
+            # Проверка формата имени (только буквы, цифры и пробелы)
+            if not re.match(r'^[\w\s]+$', name):
+                messagebox.showerror("Ошибка", "Имя факультатива должно состоять из букв, цифр и пробелов.")
+                return
+
+            self.facultatives.append(Facultative(name, student, teacher))
+            self.save_data()
+            self.update_facultative_listbox()
+            add_window.destroy()
+
+        add_window = tk.Toplevel(self.root)
+        add_window.title("Добавить факультатив")
+
+        add_window.geometry("400x250")
+
+        # Получите центр экрана
+        screen_width = add_window.winfo_screenwidth()
+        screen_height = add_window.winfo_screenheight()
+
+        # Вычислите координаты центра для окна
+        x = (screen_width / 2) - (add_window.winfo_reqwidth() / 2)
+        y = (screen_height / 2) - (add_window.winfo_reqheight() / 2)
+
+        # Позиционируйте окно по центру
+        add_window.geometry("+%d+%d" % (x, y))
+
+        name_label = ttk.Label(add_window, text="Название факультатива:")
+        name_label.pack(pady=5)
+        name_entry = ttk.Entry(add_window)
+        name_entry.pack(pady=5)
+
+        student_label = ttk.Label(add_window, text="Студент:")
+        student_label.pack(pady=5)
+        student_entry = ttk.Entry(add_window)
+        student_entry.pack(pady=5)
+
+        teacher_label = ttk.Label(add_window, text="Преподаватель:")
+        teacher_label.pack(pady=5)
+        teacher_entry = ttk.Entry(add_window)
+        teacher_entry.pack(pady=5)
+
+        save_button = ttk.Button(add_window, text="Сохранить", command=save_facultative)
+        save_button.pack(pady=10)
+
+    def delete_facultative(self):
+        selected_index = self.facultative_listbox.curselection()
+        if selected_index:
+            # Получение индекса выбранного элемента
+            index = selected_index[0]
+
+            # Удаление элемента из списка и файла
+            del self.facultatives[index]
+            self.save_data()
+            self.update_facultative_listbox()
+        else:
+            messagebox.showwarning("Предупреждение", "Выберите факультатив для удаления.")
+
+    def edit_facultative(self):
+        selected_index = self.facultative_listbox.curselection()
+        if selected_index:
+            # Получение индекса выбранного элемента
+            index = selected_index[0]
+            facultative = self.facultatives[index]
+
+            def save_changes():
+                facultative.name = name_entry.get()
+                facultative.student = student_entry.get()
+                facultative.teacher = teacher_entry.get()
+
+                # Проверка на пустые поля
+                if not facultative.name or not facultative.student or not facultative.teacher:
+                    messagebox.showerror("Ошибка", "Заполните все поля.")
+                    return
+
+                # Проверка формата имени (только буквы, цифры и пробелы)
+                if not re.match(r'^[\w\s]+$', facultative.name):
+                    messagebox.showerror("Ошибка", "Имя факультатива должно состоять из букв, цифр и пробелов.")
+                    return
+
+                self.save_data()
+                self.update_facultative_listbox()
+                edit_window.destroy()
+
+            edit_window = tk.Toplevel(self.root)
+            edit_window.title("Редактировать факультатив")
+
+            edit_window.geometry("400x250")
+
+            # Получите центр экрана
+            screen_width = edit_window.winfo_screenwidth()
+            screen_height = edit_window.winfo_screenheight()
+
+            # Вычислите координаты центра для окна
+            x = (screen_width / 2) - (edit_window.winfo_reqwidth() / 2)
+            y = (screen_height / 2) - (edit_window.winfo_reqheight() / 2)
+
+            # Позиционируйте окно по центру
+            edit_window.geometry("+%d+%d" % (x, y))
+
+            name_label = ttk.Label(edit_window, text="Название факультатива:")
+            name_label.pack(pady=5)
+            name_entry = ttk.Entry(edit_window)
+            name_entry.insert(0, facultative.name)
+            name_entry.pack(pady=5)
+
+            student_label = ttk.Label(edit_window, text="Студент:")
+            student_label.pack(pady=5)
+            student_entry = ttk.Entry(edit_window)
+            student_entry.insert(0, facultative.student)
+            student_entry.pack(pady=5)
+
+            teacher_label = ttk.Label(edit_window, text="Преподаватель:")
+            teacher_label.pack(pady=5)
+            teacher_entry = ttk.Entry(edit_window)
+            teacher_entry.insert(0, facultative.teacher)
+            teacher_entry.pack(pady=5)
+
+            save_button = ttk.Button(edit_window, text="Сохранить изменения", command=save_changes)
+            save_button.pack(pady=10)
+        else:
+            messagebox.showwarning("Предупреждение", "Выберите факультатив для редактирования.")
+
+
+if __name__ == "__main__":
+    manager = FacultativeManager()
