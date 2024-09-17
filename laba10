@@ -8,12 +8,10 @@
 import tkinter as tk
 from tkinter import messagebox
 
-
 class TicTacToe:
     def __init__(self, master):
         self.master = master
         self.master.title("Крестики-нолики")
-        self.master.geometry("400x400")
 
         # Устанавливаем размер окна
         screen_width = master.winfo_screenwidth()
@@ -29,18 +27,25 @@ class TicTacToe:
         self.game_over = False
 
         self.buttons = [[None for _ in range(3)] for _ in range(3)]
-        for row in range(3):
-            for col in range(3):
-                button = tk.Button(master, text="", font=("Arial", 48), command=lambda row=row, col=col: self.click_button(row, col))
-                button.grid(row=row, column=col, sticky="nsew")
-                self.buttons[row][col] = button
+        for i in range(3):
+            for j in range(3):
+                button = tk.Button(
+                    master,
+                    text=" ",
+                    font=("Arial", 48),
+                    width=3,
+                    height=1,
+                    command=lambda row=i, col=j: self.click_button(row, col)
+                )
+                button.grid(row=i, column=j, padx=5, pady=5)
+                self.buttons[i][j] = button
 
         self.label = tk.Label(master, text="Ход: X", font=("Arial", 24))
-        self.label.grid(row=3, columnspan=3)
+        self.label.grid(row=3, columnspan=3, sticky="nsew")
 
         # Кнопка "Сброс"
         reset_button = tk.Button(master, text="Сброс", font=("Arial", 18), command=self.reset_game)
-        reset_button.grid(row=4, columnspan=3)
+        reset_button.grid(row=4, columnspan=3, sticky="nsew")
 
     def click_button(self, row, col):
         if self.game_over:
@@ -115,16 +120,14 @@ class TicTacToe:
     def check_win(self, player):
         # Проверяем строки, столбцы и диагонали
         for i in range(3):
-            if self.board[i][0] == self.board[i][1] == self.board[i][2] == player:
+            if self.board[i][0] == player and self.board[i][1] == player and self.board[i][2] == player:
                 return True
-            if self.board[0][i] == self.board[1][i] == self.board[2][i] == player:
+            if self.board[0][i] == player and self.board[1][i] == player and self.board[2][i] == player:
                 return True
-
-        if self.board[0][0] == self.board[1][1] == self.board[2][2] == player:
+        if self.board[0][0] == player and self.board[1][1] == player and self.board[2][2] == player:
             return True
-        if self.board[0][2] == self.board[1][1] == self.board[2][0] == player:
+        if self.board[0][2] == player and self.board[1][1] == player and self.board[2][0] == player:
             return True
-
         return False
 
     def check_draw(self):
@@ -134,18 +137,17 @@ class TicTacToe:
                     return False
         return True
 
+    def show_winner(self, winner):
+        messagebox.showinfo("Результат", f"Победил {winner}!")
+
     def reset_game(self):
         self.board = [['' for _ in range(3)] for _ in range(3)]
         self.current_player = 'X'
         self.game_over = False
-        self.label.config(text="Ход: X")
         for row in range(3):
             for col in range(3):
                 self.buttons[row][col].config(text="")
-
-    def show_winner(self, winner):
-        messagebox.showinfo("Игра окончена!", f"{winner} победил!")
-
+        self.label.config(text="Ход: X")
 
 if __name__ == "__main__":
     root = tk.Tk()
